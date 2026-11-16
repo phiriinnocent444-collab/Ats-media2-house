@@ -1,0 +1,30 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><title>Unit 9 – CSS, DOM and JavaScript</title>
+<style>/* 9.1 Cascading style sheet: selectors, box model, colours */
+body{font:16px/1.5 system-ui;max-width:640px;margin:24px auto;padding:0 16px}
+h1{color:#b4531a;border-bottom:3px solid #b4531a}.box{border:1px solid #ccc;padding:12px;border-radius:8px;margin:12px 0}
+.hot{background:#fff4d6}#total{font-weight:700}</style></head><body>
+<h1>Unit 9 demo</h1>
+<!-- 9.3 Embedding JavaScript in HTML -->
+<script>
+  // 9.4 The object model and the write method
+  document.write('<p class="box">Written by <code>document.write</code> at ' + new Date().toLocaleTimeString() + '</p>');
+  // 9.5 Functions in JavaScript
+  function totalFor(price, qty, discount) { return price * qty * (1 - (discount || 0)); }
+</script>
+<div class="box">
+  <h2>Quote calculator (9.6 interacting with forms)</h2>
+  <label>Package <select id="pkg"><option value="3500">Wedding</option><option value="1800">Corporate</option><option value="900">Family</option><option value="700">Graduation</option></select></label><br>
+  <label>Sessions <input id="qty" type="number" min="1" value="1"></label>
+  <label><input id="promo" type="checkbox"> 10% promo</label>
+  <p>Total: <span id="total"></span></p>
+</div>
+<script>
+  var pkg = document.getElementById('pkg'), qty = document.getElementById('qty'), promo = document.getElementById('promo'), out = document.getElementById('total');
+  function update() {                                        // DOM: read form values, change page content and style
+    var t = totalFor(Number(pkg.value), Math.max(1, Number(qty.value) || 1), promo.checked ? 0.1 : 0);
+    out.textContent = 'K' + t.toFixed(2);
+    out.parentNode.parentNode.classList.toggle('hot', promo.checked);
+  }
+  [pkg, qty, promo].forEach(function (el) { el.addEventListener('input', update); });
+  update();
+</script></body></html>

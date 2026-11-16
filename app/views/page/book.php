@@ -1,0 +1,3 @@
+<p class="eyebrow">Reserve your date</p><h2><?= $submit === 'Save booking' ? 'Book a photography session' : 'Edit booking' ?></h2>
+<?php if ($submit === 'Save booking'): ?><p class="section-lede">Select Wedding Photography, Corporate Shoot, Event Coverage, Family Portrait, or Graduation Shoot, enter your details and preferred date, and save directly to our studio calendar. Confirm payment via WhatsApp (0772 300 053) or Airtel Money on the <a href="../index.php#book">main booking page</a>.</p><?php endif; ?>
+<div style="max-width:560px"><?php require __DIR__ . '/../partials/booking_form.php'; ?></div>

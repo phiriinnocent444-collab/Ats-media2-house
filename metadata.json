@@ -1,0 +1,6 @@
+{
+  "name": "ATS media house",
+  "description": "Wedding, Corporate, Family and Event photography studio in Lusaka, Zambia. Book sessions online, pay with Airtel Money, and manage bookings in the studio admin portal.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

@@ -1,0 +1,11 @@
+{
+  "name": "ats-media-house",
+  "private": true,
+  "version": "1.0.0",
+  "scripts": {
+    "dev": "sh -c 'service mariadb start >/dev/null 2>&1 || true; php -S 0.0.0.0:3000 router.php'",
+    "start": "sh -c 'service mariadb start >/dev/null 2>&1 || true; php -S 0.0.0.0:3000 router.php'",
+    "build": "sh -c 'find api app cli database lessons -name \"*.php\" -exec php -l {} + && php -l index.php && php -l setup.php && php -l router.php'",
+    "lint": "sh -c 'find api app cli database lessons -name \"*.php\" -exec php -l {} + && php -l index.php && php -l setup.php && php -l router.php'"
+  }
+}

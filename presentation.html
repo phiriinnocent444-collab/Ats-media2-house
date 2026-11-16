@@ -1,0 +1,1152 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ATS media house — Interactive System Architecture &amp; ACID Simulator</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Playfair+Display:ital,wght@0,600;0,700;1,600&family=Work+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --paper: #ECE6D6;
+      --paper-2: #E2DBC7;
+      --card: #FBF8F0;
+      --white: #FFFFFF;
+      --ink: #14171C;
+      --muted: #5A5A54;
+      --navy: #1F2B4D;
+      --navy-hi: #2B3B68;
+      --brass: #C9A227;
+      --brass-lo: #8C701A;
+      --line: rgba(20, 23, 28, 0.14);
+      --line-strong: rgba(20, 23, 28, 0.28);
+      --ok: #1E6B2F;
+      --ok-bg: #E2F3E5;
+      --warn: #7A5C00;
+      --warn-bg: #FDF3D8;
+      --err: #A3352B;
+      --err-bg: #FBE4E1;
+      --display: 'Playfair Display', Georgia, serif;
+      --body: 'Work Sans', system-ui, -apple-system, sans-serif;
+      --mono: 'IBM Plex Mono', ui-monospace, SFMono-Regular, monospace;
+      --radius: 3px;
+    }
+
+    * { box-sizing: border-box; }
+    html, body { margin: 0; padding: 0; background: var(--paper); color: var(--ink); font-family: var(--body); line-height: 1.55; }
+    h1, h2, h3, h4 { font-family: var(--display); margin: 0 0 .45em; line-height: 1.18; font-weight: 700; }
+    p { margin: 0 0 .9em; }
+    code, pre { font-family: var(--mono); }
+
+    .shell { max-width: 1240px; margin: 0 auto; padding: 0 24px; }
+
+    /* Top Presentation Header */
+    .topbar {
+      position: sticky; top: 0; z-index: 30;
+      background: var(--ink); color: var(--paper);
+      border-bottom: 2px solid var(--brass);
+    }
+    .topbar-inner {
+      display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between;
+      gap: 14px; padding: 14px 24px; max-width: 1240px; margin: 0 auto;
+    }
+    .brand { display: flex; align-items: center; gap: 10px; }
+    .brand-mark {
+      width: 30px; height: 30px; border: 1px solid var(--brass); border-radius: 50%;
+      display: grid; place-items: center; color: var(--brass); font-family: var(--mono); font-size: .95rem;
+    }
+    .brand-title { font-family: var(--display); font-size: 1.15rem; font-weight: 700; }
+    .brand-title em { color: var(--brass); font-style: italic; font-weight: 600; }
+    .brand-sub { font-family: var(--mono); font-size: .72rem; color: #B9B3A3; text-transform: uppercase; letter-spacing: .08em; }
+
+    .slide-tabs { display: flex; flex-wrap: wrap; gap: 6px; }
+    .tab-btn {
+      font-family: var(--body); font-size: .84rem; font-weight: 600;
+      background: rgba(255,255,255,0.06); color: var(--paper);
+      border: 1px solid rgba(236,230,214,0.2); border-radius: var(--radius);
+      padding: 8px 13px; cursor: pointer; transition: background .15s, border-color .15s;
+    }
+    .tab-btn:hover { background: rgba(201,162,39,0.18); border-color: var(--brass); }
+    .tab-btn[aria-selected="true"] { background: var(--brass); color: var(--ink); border-color: var(--brass); }
+
+    .slide-nav { display: flex; align-items: center; gap: 8px; }
+    .nav-btn {
+      font-family: var(--mono); font-size: .78rem; padding: 7px 11px;
+      background: transparent; color: var(--paper); border: 1px solid rgba(236,230,214,0.28);
+      border-radius: var(--radius); cursor: pointer;
+    }
+    .nav-btn:hover:not(:disabled) { border-color: var(--brass); color: var(--brass); }
+    .nav-btn:disabled { opacity: .4; cursor: not-allowed; }
+    .slide-counter { font-family: var(--mono); font-size: .76rem; color: var(--brass); min-width: 48px; text-align: center; }
+
+    /* Hero / Slide Intro */
+    .main-stage { padding: 28px 0 48px; }
+    .slide { display: none; }
+    .slide.active { display: block; animation: fadeUp .2s ease-out; }
+    @keyframes fadeUp { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
+
+    .eyebrow {
+      font-family: var(--mono); font-size: .74rem; text-transform: uppercase;
+      letter-spacing: .09em; color: var(--brass-lo); margin-bottom: 6px; font-weight: 600;
+    }
+    .slide-head {
+      display: flex; flex-wrap: wrap; justify-content: space-between; align-items: flex-end;
+      gap: 16px; border-bottom: 1px solid var(--line); padding-bottom: 16px; margin-bottom: 22px;
+    }
+    .slide-head h1 { font-size: clamp(1.55rem, 2.6vw, 2.15rem); margin: 0; }
+    .slide-lede { color: var(--muted); max-width: 72ch; margin: 6px 0 0; font-size: .96rem; }
+
+    /* Buttons & Form Controls */
+    .btn {
+      display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+      font-family: var(--body); font-size: .86rem; font-weight: 600;
+      padding: 9px 15px; border-radius: var(--radius); border: 1px solid transparent;
+      cursor: pointer; transition: background .15s, border-color .15s, color .15s;
+    }
+    .btn-primary { background: var(--navy); color: var(--white); }
+    .btn-primary:hover { background: var(--navy-hi); }
+    .btn-brass { background: var(--brass); color: var(--ink); }
+    .btn-brass:hover { background: #D7B139; }
+    .btn-outline { background: var(--white); color: var(--ink); border-color: var(--line-strong); }
+    .btn-outline:hover { border-color: var(--navy); color: var(--navy); }
+    .btn-danger { background: var(--err); color: var(--white); border-color: var(--err); }
+    .btn-sm { padding: 5px 10px; font-size: .78rem; }
+
+    input, select {
+      font-family: var(--body); font-size: .9rem; padding: 8px 10px;
+      border: 1px solid var(--line-strong); border-radius: var(--radius);
+      background: var(--white); color: var(--ink); width: 100%;
+    }
+    input:focus, select:focus { outline: none; border-color: var(--navy); box-shadow: 0 0 0 3px rgba(31,43,77,.14); }
+    label { display: block; font-size: .78rem; font-weight: 600; margin-bottom: 4px; color: var(--ink); }
+
+    /* Cards & Grids */
+    .grid-2 { display: grid; grid-template-columns: 1.05fr .95fr; gap: 22px; align-items: start; }
+    .grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+    .panel {
+      background: var(--white); border: 1px solid var(--line);
+      border-radius: var(--radius); padding: 20px;
+    }
+    .panel-warm { background: var(--card); }
+    .panel-dark { background: var(--ink); color: var(--paper); border-color: #2A2F38; }
+    .panel h3 { font-size: 1.15rem; margin-bottom: 10px; }
+
+    .kpi-strip { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 18px; }
+    .kpi {
+      background: var(--white); border: 1px solid var(--line); border-radius: var(--radius); padding: 14px 16px;
+    }
+    .kpi strong { display: block; font-family: var(--mono); font-size: 1.35rem; color: var(--navy); font-variant-numeric: tabular-nums; }
+    .kpi span { font-size: .78rem; color: var(--muted); }
+
+    /* Architecture Flow Nodes */
+    .controls-bar {
+      display: flex; flex-wrap: wrap; gap: 10px; align-items: flex-end;
+      background: var(--card); border: 1px solid var(--line); padding: 14px 16px;
+      border-radius: var(--radius); margin-bottom: 18px;
+    }
+    .controls-bar .field { min-width: 240px; flex: 1 1 240px; }
+
+    .arch-pipeline {
+      display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 18px;
+    }
+    .arch-node {
+      background: var(--white); border: 2px solid var(--line); border-radius: var(--radius);
+      padding: 16px; text-align: left; cursor: pointer; position: relative;
+      transition: border-color .2s, transform .15s, box-shadow .2s;
+    }
+    .arch-node:hover { border-color: var(--navy); }
+    .arch-node.active-hop {
+      border-color: var(--brass); background: #FFFDF6;
+      box-shadow: 0 6px 18px rgba(140, 112, 26, 0.16); transform: translateY(-2px);
+    }
+    .arch-node.done-hop { border-color: var(--ok); }
+    .hop-badge {
+      display: inline-block; font-family: var(--mono); font-size: .72rem; font-weight: 600;
+      color: var(--brass-lo); text-transform: uppercase; letter-spacing: .06em; margin-bottom: 6px;
+    }
+    .arch-node h4 { font-family: var(--body); font-size: .98rem; margin: 0 0 6px; }
+    .arch-node p { font-size: .82rem; color: var(--muted); margin: 0; }
+    .arch-tech {
+      margin-top: 10px; padding-top: 8px; border-top: 1px solid var(--line);
+      font-family: var(--mono); font-size: .72rem; color: var(--navy);
+    }
+
+    /* Terminal / Trace Box */
+    .trace-box {
+      font-family: var(--mono); font-size: .8rem; line-height: 1.55;
+      background: #14171C; color: #E8E3D5; border-radius: var(--radius);
+      padding: 16px; overflow-x: auto; border: 1px solid #2C313B;
+    }
+    .trace-line { padding: 3px 6px; border-left: 3px solid transparent; margin-bottom: 4px; }
+    .trace-line.ok { border-left-color: #4BB563; color: #D4F3DA; }
+    .trace-line.warn { border-left-color: var(--brass); color: #FBE9AF; }
+    .trace-line.err { border-left-color: #E06B5E; color: #FCD5D0; }
+    .trace-line.info { border-left-color: #6E91E0; color: #D8E4FC; }
+
+    /* Tables */
+    .table-wrap { overflow-x: auto; border: 1px solid var(--line); border-radius: var(--radius); background: var(--white); }
+    table { width: 100%; border-collapse: collapse; font-size: .85rem; font-variant-numeric: tabular-nums; }
+    th, td { padding: 9px 11px; border-bottom: 1px solid var(--line); text-align: left; vertical-align: top; }
+    th {
+      background: var(--paper-2); font-family: var(--mono); font-size: .72rem;
+      text-transform: uppercase; letter-spacing: .06em; color: var(--ink);
+    }
+    tr.row-flash { animation: rowHighlight 1.1s ease-out; }
+    @keyframes rowHighlight { from { background: #FFF0BE; } to { background: transparent; } }
+
+    .status-text { font-family: var(--mono); font-size: .76rem; font-weight: 600; }
+    .st-paid, .st-SUCCESS, .st-COMMITTED { color: var(--ok); }
+    .st-pending_payment, .st-PENDING, .st-LOCKED { color: var(--warn); }
+    .st-cancelled, .st-FAILED, .st-ROLLED_BACK { color: var(--err); }
+
+    .banner {
+      padding: 10px 14px; border-radius: var(--radius); font-size: .86rem; margin-bottom: 14px;
+      border: 1px solid transparent;
+    }
+    .banner.ok { background: var(--ok-bg); color: var(--ok); border-color: #9ECFA8; }
+    .banner.warn { background: var(--warn-bg); color: var(--warn); border-color: #E8CF7F; }
+    .banner.err { background: var(--err-bg); color: var(--err); border-color: #E8A79E; }
+
+    .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+    .form-grid .full { grid-column: 1 / -1; }
+
+    /* ACID Timeline */
+    .acid-steps { display: grid; gap: 8px; margin-bottom: 14px; }
+    .acid-step {
+      display: flex; justify-content: space-between; align-items: center; gap: 12px;
+      padding: 10px 12px; border: 1px solid var(--line); border-radius: var(--radius);
+      background: var(--card); font-size: .84rem;
+    }
+    .acid-step.running { border-color: var(--brass); background: #FFFDF4; }
+    .acid-step.committed { border-color: var(--ok); background: var(--ok-bg); }
+    .acid-step.rolledback { border-color: var(--err); background: var(--err-bg); }
+    .acid-step code { font-size: .76rem; color: var(--navy); }
+
+    /* Toggle Switch */
+    .mode-switch { display: inline-flex; border: 1px solid var(--line-strong); border-radius: var(--radius); overflow: hidden; }
+    .mode-switch button {
+      border: 0; background: var(--white); padding: 8px 14px; font-family: var(--body);
+      font-size: .84rem; font-weight: 600; cursor: pointer;
+    }
+    .mode-switch button[aria-pressed="true"] { background: var(--navy); color: var(--white); }
+
+    .pres-footer {
+      border-top: 1px solid var(--line); padding: 18px 0 32px;
+      font-size: .82rem; color: var(--muted); display: flex; flex-wrap: wrap;
+      justify-content: space-between; gap: 12px;
+    }
+
+    @media (max-width: 980px) {
+      .arch-pipeline { grid-template-columns: 1fr 1fr; }
+      .grid-2, .grid-3 { grid-template-columns: 1fr; }
+      .kpi-strip { grid-template-columns: 1fr 1fr; }
+    }
+    @media (max-width: 640px) {
+      .topbar-inner { padding: 12px 16px; }
+      .shell { padding: 0 16px; }
+      .arch-pipeline { grid-template-columns: 1fr; }
+      .form-grid { grid-template-columns: 1fr; }
+      .tab-btn { padding: 6px 10px; font-size: .78rem; }
+    }
+  </style>
+</head>
+<body>
+  <header class="topbar">
+    <div class="topbar-inner">
+      <div class="brand">
+        <div class="brand-mark" aria-hidden="true">◎</div>
+        <div>
+          <div class="brand-title">ATS <em>media house</em></div>
+          <div class="brand-sub">Interactive System Walkthrough</div>
+        </div>
+      </div>
+
+      <nav class="slide-tabs" role="tablist" aria-label="Presentation modules">
+        <button class="tab-btn" role="tab" aria-selected="true" data-slide="0">1. Architecture</button>
+        <button class="tab-btn" role="tab" aria-selected="false" data-slide="1">2. Live CRUD</button>
+        <button class="tab-btn" role="tab" aria-selected="false" data-slide="2">3. ACID Lab</button>
+        <button class="tab-btn" role="tab" aria-selected="false" data-slide="3">4. Security &amp; XAMPP</button>
+      </nav>
+
+      <div class="slide-nav">
+        <button type="button" class="nav-btn" id="prev-slide" aria-label="Previous slide">&larr; Prev</button>
+        <span class="slide-counter" id="slide-counter">1 / 4</span>
+        <button type="button" class="nav-btn" id="next-slide" aria-label="Next slide">Next &rarr;</button>
+      </div>
+    </div>
+  </header>
+
+  <main class="shell main-stage">
+    <!-- SLIDE 1: ARCHITECTURE & REQUEST FLOW -->
+    <section class="slide active" id="slide-0" aria-label="System Architecture">
+      <div class="slide-head">
+        <div>
+          <p class="eyebrow">Module 01 &middot; Stack &amp; Request Lifecycle</p>
+          <h1>How ATS media house works end-to-end</h1>
+          <p class="slide-lede">Built strictly with HTML, CSS, JavaScript, PHP 8.2 MVC, and MySQL (InnoDB). Choose a real user action below and step through each layer from browser to database.</p>
+        </div>
+        <button type="button" class="btn btn-outline btn-sm" id="arch-reset">Reset flow</button>
+      </div>
+
+      <div class="controls-bar">
+        <div class="field">
+          <label for="flow-scenario">Choose request to simulate</label>
+          <select id="flow-scenario">
+            <option value="book">Customer books Wedding Photography (POST page/book)</option>
+            <option value="airtel">Airtel Money UAT payment confirmation (ACID settle)</option>
+            <option value="login">Studio manager logs into Admin Portal (Cookieless-safe)</option>
+            <option value="markpaid">Admin marks pending booking as paid (MAN ledger)</option>
+          </select>
+        </div>
+        <button type="button" class="btn btn-primary" id="arch-run-all">Auto-play full request</button>
+        <button type="button" class="btn btn-brass" id="arch-step-next">Step next layer &rarr;</button>
+      </div>
+
+      <div class="arch-pipeline" id="arch-pipeline">
+        <button type="button" class="arch-node" data-hop="0">
+          <span class="hop-badge">Layer 01 &middot; Client</span>
+          <h4>HTML / CSS / JS UI</h4>
+          <p>Contact sheet Kwacha cards, sticky booking form, live validation, status lookup.</p>
+          <div class="arch-tech">index.php &middot; js/script.js &middot; js/app.js</div>
+        </button>
+        <button type="button" class="arch-node" data-hop="1">
+          <span class="hop-badge">Layer 02 &middot; Security Gate</span>
+          <h4>Cookies &amp; Dual CSRF</h4>
+          <p>HTTPS proxy detection, SameSite=None;Partitioned cookies, HMAC-SHA256 CSRF.</p>
+          <div class="arch-tech">bootstrap.php &middot; functions.php</div>
+        </button>
+        <button type="button" class="arch-node" data-hop="2">
+          <span class="hop-badge">Layer 03 &middot; PHP MVC</span>
+          <h4>Router &amp; Controllers</h4>
+          <p>Dispatches page/*, auth/*, admin/* routes and REST JSON endpoints.</p>
+          <div class="arch-tech">app/core/Router.php &middot; Controllers</div>
+        </button>
+        <button type="button" class="arch-node" data-hop="3">
+          <span class="hop-badge">Layer 04 &middot; Storage</span>
+          <h4>MySQL InnoDB (ACID)</h4>
+          <p>Row-locked transactions across customers, services, bookings &amp; payments.</p>
+          <div class="arch-tech">with_tx() &middot; FOR UPDATE &middot; COMMIT</div>
+        </button>
+      </div>
+
+      <div class="grid-2">
+        <div class="panel">
+          <p class="eyebrow">Active Layer Inspector</p>
+          <h3 id="hop-title">Select a layer or click "Step next layer"</h3>
+          <p id="hop-desc">Each step explains the exact code path executed inside the ATS media house stack when a client or studio manager interacts with the system.</p>
+          <div id="hop-meta" class="banner ok" style="display:none"></div>
+        </div>
+        <div class="panel panel-dark">
+          <p class="eyebrow" style="color:var(--brass)">Live HTTP &amp; SQL Execution Trace</p>
+          <div class="trace-box" id="arch-trace" aria-live="polite">
+            <div class="trace-line info">// Ready. Pick a scenario and click "Auto-play full request" or "Step next layer".</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- SLIDE 2: LIVE CRUD SIMULATOR -->
+    <section class="slide" id="slide-1" aria-label="Live CRUD Simulator">
+      <div class="slide-head">
+        <div>
+          <p class="eyebrow">Module 02 &middot; Front-to-Back CRUD Simulation</p>
+          <h1>Interactive Bookings &amp; Payments Database</h1>
+          <p class="slide-lede">Create a booking, filter or search records, mark unpaid bookings as paid (adding an audit row), or test two-step audit-safe deletion.</p>
+        </div>
+        <button type="button" class="btn btn-outline btn-sm" id="crud-reset">Reset demo records</button>
+      </div>
+
+      <div class="kpi-strip" aria-label="Live KPI summary">
+        <div class="kpi"><strong id="kpi-total">0</strong><span>Total bookings</span></div>
+        <div class="kpi"><strong id="kpi-pending">0</strong><span>Awaiting payment</span></div>
+        <div class="kpi"><strong id="kpi-paid">0</strong><span>Paid bookings</span></div>
+        <div class="kpi"><strong id="kpi-rev">K0.00</strong><span>Paid revenue (ZMW)</span></div>
+      </div>
+
+      <div id="crud-feedback" class="banner ok" style="display:none" role="status"></div>
+
+      <div class="grid-2">
+        <div class="panel panel-warm">
+          <h3>Create new booking (INSERT)</h3>
+          <form id="sim-create-form" class="form-grid">
+            <div>
+              <label for="sim-name">Client full name</label>
+              <input id="sim-name" required placeholder="e.g. Chanda Mwansa">
+            </div>
+            <div>
+              <label for="sim-phone">Zambian phone</label>
+              <input id="sim-phone" required placeholder="e.g. 0972971151">
+            </div>
+            <div>
+              <label for="sim-service">Kwacha package</label>
+              <select id="sim-service">
+                <option value="wedding">Wedding Photography — K3,500.00</option>
+                <option value="corporate">Corporate Shoot — K1,800.00</option>
+                <option value="event">Event Coverage — K1,500.00</option>
+                <option value="family">Family Portrait Session — K900.00</option>
+                <option value="graduation">Graduation Shoot — K700.00</option>
+              </select>
+            </div>
+            <div>
+              <label for="sim-date">Preferred date</label>
+              <input id="sim-date" type="date" required>
+            </div>
+            <div class="full">
+              <button type="submit" class="btn btn-primary">Save booking (BEGIN &rarr; COMMIT)</button>
+            </div>
+          </form>
+
+          <hr style="border:0;border-top:1px solid var(--line);margin:18px 0;">
+          <h3>Last executed SQL</h3>
+          <div class="trace-box" id="crud-sql-log">
+            <div class="trace-line info">-- Initial SELECT FROM bookings JOIN customers JOIN services...</div>
+          </div>
+        </div>
+
+        <div class="panel">
+          <h3>Bookings &amp; Payments (READ / UPDATE / DELETE)</h3>
+          <div class="controls-bar" style="padding:10px;margin-bottom:12px;">
+            <div class="field" style="min-width:160px;">
+              <label for="sim-search">Search name or ref</label>
+              <input id="sim-search" placeholder="Search...">
+            </div>
+            <div class="field" style="min-width:140px;">
+              <label for="sim-filter">Filter status</label>
+              <select id="sim-filter">
+                <option value="">All statuses</option>
+                <option value="pending_payment">pending_payment</option>
+                <option value="paid">paid</option>
+                <option value="cancelled">cancelled</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr><th>Ref</th><th>Client</th><th>Package</th><th>Amount</th><th>Status</th><th>Actions</th></tr>
+              </thead>
+              <tbody id="crud-tbody"></tbody>
+            </table>
+          </div>
+          <p style="font-size:.78rem;color:var(--muted);margin:10px 0 0;">
+            <strong>Integrity rule:</strong> Deleting a booking with <code>0</code> payment rows runs a hard <code>DELETE</code>. Deleting a booking with existing payment rows transitions it to <code>cancelled</code> to preserve financial audit history.
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <!-- SLIDE 3: ACID TRANSACTION & ROLLBACK LAB -->
+    <section class="slide" id="slide-2" aria-label="ACID Transaction Lab">
+      <div class="slide-head">
+        <div>
+          <p class="eyebrow">Module 03 &middot; MySQL InnoDB Guarantees</p>
+          <h1>ACID Transaction &amp; Rollback Lab</h1>
+          <p class="slide-lede">Demonstrates why multi-table payment operations run inside <code>with_tx()</code> with <code>FOR UPDATE</code> row locks—guaranteeing zero partial writes.</p>
+        </div>
+      </div>
+
+      <div class="controls-bar">
+        <button type="button" class="btn btn-primary" id="acid-commit-btn">Run A: Atomic Commit (COMMIT)</button>
+        <button type="button" class="btn btn-danger" id="acid-rollback-btn">Run B: Mid-Flight Failure (ROLLBACK)</button>
+        <button type="button" class="btn btn-brass" id="acid-race-btn">Run C: Concurrent Double-Click Guard</button>
+      </div>
+
+      <div class="grid-2">
+        <div class="panel">
+          <h3>Transaction Step Trace</h3>
+          <div class="acid-steps" id="acid-steps">
+            <div class="acid-step"><span>Click one of the three scenarios above to watch InnoDB execute step-by-step.</span></div>
+          </div>
+          <div id="acid-summary" class="banner ok" style="display:none"></div>
+        </div>
+
+        <div class="panel">
+          <h3>Live Database Row State</h3>
+          <p style="font-size:.82rem;color:var(--muted);margin-bottom:10px;">Target booking &amp; linked payment ledger row inside InnoDB:</p>
+          <div class="table-wrap" style="margin-bottom:14px;">
+            <table>
+              <thead><tr><th>Table</th><th>Key</th><th>State</th><th>Lock</th></tr></thead>
+              <tbody id="acid-db-state">
+                <tr>
+                  <td><code>bookings</code></td>
+                  <td>BK2026-8841</td>
+                  <td><span class="status-text st-pending_payment">pending_payment (K3,500)</span></td>
+                  <td><span class="status-text">Unlocked</span></td>
+                </tr>
+                <tr>
+                  <td><code>payments</code></td>
+                  <td>(none)</td>
+                  <td><span class="status-text">0 rows</span></td>
+                  <td><span class="status-text">Unlocked</span></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <div class="trace-box" id="acid-sql">
+            <div class="trace-line info">// Waiting to start InnoDB transaction...</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- SLIDE 4: SECURITY, IFRAME CSRF & XAMPP PORTABILITY -->
+    <section class="slide" id="slide-3" aria-label="Security and XAMPP Portability">
+      <div class="slide-head">
+        <div>
+          <p class="eyebrow">Module 04 &middot; Deployment &amp; Security Engineering</p>
+          <h1>Iframe Session Recovery &amp; XAMPP Portability</h1>
+          <p class="slide-lede">One codebase runs seamlessly on both HTTPS reverse-proxy iframes and local HTTP XAMPP (<code>localhost/ats-media-house/</code>).</p>
+        </div>
+      </div>
+
+      <div class="grid-2">
+        <div class="panel">
+          <h3>1. Environment Cookie &amp; Session Switcher</h3>
+          <p style="font-size:.86rem;color:var(--muted);">Toggle how <code>bootstrap.php</code> &amp; <code>functions.php</code> adapt automatically based on the incoming request protocol:</p>
+          <div class="mode-switch" role="group" aria-label="Environment mode" style="margin-bottom:14px;">
+            <button type="button" id="env-iframe" aria-pressed="true">HTTPS Iframe Preview</button>
+            <button type="button" id="env-xampp" aria-pressed="false">Local HTTP XAMPP</button>
+          </div>
+          <div class="trace-box" id="env-headers"></div>
+        </div>
+
+        <div class="panel">
+          <h3>2. Dual-Layer CSRF &amp; Origin Check</h3>
+          <p style="font-size:.86rem;color:var(--muted);">Test how <code>csrf_verify()</code> handles legitimate submissions when cookies are dropped versus forged cross-site POSTs:</p>
+          <div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:14px;">
+            <button type="button" class="btn btn-primary btn-sm" id="test-csrf-valid">Submit Valid HMAC Token</button>
+            <button type="button" class="btn btn-danger btn-sm" id="test-csrf-forged">Submit Tampered Token</button>
+          </div>
+          <div id="csrf-sim-result" class="banner warn">Click a button above to test CSRF verification live.</div>
+          <div class="trace-box" id="csrf-sim-log">
+            <div class="trace-line info">// Token format: &lt;unix_ts&gt;.&lt;nonce_24hex&gt;.&lt;hmac_sha256_sig&gt;</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="grid-3" style="margin-top:20px;">
+        <div class="panel panel-warm">
+          <h4>Zero-Config XAMPP</h4>
+          <p style="font-size:.84rem;color:var(--muted);margin:0;"><code>setup.php</code> checks PHP 8.2, PDO MySQL, GD, and auto-creates/seeds <code>ats_media_house</code> in one click.</p>
+        </div>
+        <div class="panel panel-warm">
+          <h4>Subfolder Portable URLs</h4>
+          <p style="font-size:.84rem;color:var(--muted);margin:0;"><code>url()</code> derives paths dynamically from <code>SCRIPT_NAME</code>, working at <code>/</code> or <code>/ats-media-house/</code>.</p>
+        </div>
+        <div class="panel panel-warm">
+          <h4>Cookieless Admin Bridge</h4>
+          <p style="font-size:.84rem;color:var(--muted);margin:0;">When an iframe blocks 3rd-party cookies, an 8-hour HMAC <code>_at</code> token keeps Admin CRUD &amp; flashes alive.</p>
+        </div>
+      </div>
+    </section>
+
+    <footer class="pres-footer">
+      <span>ATS media house &middot; Presentation Companion (Standalone HTML/CSS/JS)</span>
+      <span>Tip: Use <strong>&larr;</strong> and <strong>&rarr;</strong> arrow keys to switch modules during your talk.</span>
+    </footer>
+  </main>
+
+  <script>
+    (function () {
+      // Slide switching + keyboard navigation
+      var currentSlide = 0;
+      var totalSlides = 4;
+      var tabs = document.querySelectorAll('.tab-btn');
+      var slides = document.querySelectorAll('.slide');
+      var prevBtn = document.getElementById('prev-slide');
+      var nextBtn = document.getElementById('next-slide');
+      var counterEl = document.getElementById('slide-counter');
+
+      function goToSlide(idx) {
+        currentSlide = Math.max(0, Math.min(totalSlides - 1, idx));
+        slides.forEach(function (s, i) { s.classList.toggle('active', i === currentSlide); });
+        tabs.forEach(function (t, i) { t.setAttribute('aria-selected', i === currentSlide ? 'true' : 'false'); });
+        prevBtn.disabled = currentSlide === 0;
+        nextBtn.disabled = currentSlide === totalSlides - 1;
+        counterEl.textContent = (currentSlide + 1) + ' / ' + totalSlides;
+      }
+
+      tabs.forEach(function (tab) {
+        tab.addEventListener('click', function () { goToSlide(Number(tab.dataset.slide)); });
+      });
+      prevBtn.addEventListener('click', function () { goToSlide(currentSlide - 1); });
+      nextBtn.addEventListener('click', function () { goToSlide(currentSlide + 1); });
+      document.addEventListener('keydown', function (e) {
+        if (e.target.tagName === 'INPUT' || e.target.tagName === 'SELECT' || e.target.tagName === 'TEXTAREA') return;
+        if (e.key === 'ArrowRight') goToSlide(currentSlide + 1);
+        if (e.key === 'ArrowLeft') goToSlide(currentSlide - 1);
+      });
+      goToSlide(0);
+
+      // ================================================================
+      // MODULE 1: ARCHITECTURE & REQUEST FLOW SIMULATOR
+      // ================================================================
+      var FLOWS = {
+        book: [
+          {
+            title: '1. Browser validates & submits booking form',
+            desc: 'js/script.js checks Zambian MSISDN (9/10/12 digits), future date, and package selection, then posts form + HMAC CSRF token.',
+            meta: 'POST /app/index.php?r=page/book (fullName, phone, service=wedding, eventDate)',
+            logs: [
+              ['info', 'HTTP POST /app/index.php?r=page/book'],
+              ['ok', 'Client validation passed: 0972971151 -> normalized 972971151']
+            ]
+          },
+          {
+            title: '2. Security Gate verifies CSRF & proxy cookies',
+            desc: 'functions.php detects HTTPS reverse proxy and validates $_POST["csrf"] against $_SESSION["csrf"] or 12h HMAC-SHA256 signature + Origin host.',
+            meta: 'csrf_verify() -> TRUE | SameSite=None; Secure; Partitioned',
+            logs: [
+              ['ok', 'csrf_verify(): Valid HMAC-SHA256 signature & matching Origin host'],
+              ['info', 'Validator::booking() sanitized inputs & verified future eventDate']
+            ]
+          },
+          {
+            title: '3. PageController dispatches Booking::create()',
+            desc: 'MVC Front Controller (app/index.php) routes to PageController::book(), sets ats_name cookie, logs email to storage/mail.log, and prepares redirect.',
+            meta: 'PageController::book() -> Booking::create($_POST)',
+            logs: [
+              ['info', 'Router::dispatch("page/book") -> PageController::book()'],
+              ['info', 'send_mail() logged confirmation to storage/mail.log']
+            ]
+          },
+          {
+            title: '4. MySQL InnoDB executes ACID booking insert',
+            desc: 'with_tx() opens a transaction, reads authoritative Kwacha price via LOCK IN SHARE MODE, upserts customer, inserts booking, and commits.',
+            meta: 'COMMIT -> 302 Redirect to page/thanks?id=BK...',
+            logs: [
+              ['warn', 'BEGIN; SELECT price FROM services WHERE code="wedding" LOCK IN SHARE MODE;'],
+              ['ok', 'INSERT INTO customers ... ON DUPLICATE KEY UPDATE; INSERT INTO bookings ...; COMMIT;']
+            ]
+          }
+        ],
+        airtel: [
+          {
+            title: '1. Client initiates Airtel Money payment / Pay Now',
+            desc: 'Clicking Book & Pay or Pay now (UAT) triggers api/payment_initiate.php or PageController::status().',
+            meta: 'POST /api/payment_initiate.php { bookingId, phone }',
+            logs: [['info', 'HTTP POST /api/payment_initiate.php -> initiating UAT prompt']]
+          },
+          {
+            title: '2. Request Gate checks origin & locks double-clicks',
+            desc: 'Server validates booking ID format and protects against duplicate concurrent payment prompts.',
+            meta: 'Booking ID verified -> entering transaction boundary',
+            logs: [['ok', 'Validated booking BK... and normalized MSISDN 97...']]
+          },
+          {
+            title: '3. Payment gateway / UAT polling settles status',
+            desc: 'Airtel Money Collection API (or UAT sandbox confirmation) returns TS / SUCCESS status for the transaction ref.',
+            meta: 'TXN... status = SUCCESS',
+            logs: [['info', 'Gateway returned TS (Transaction Success) for TXN...']]
+          },
+          {
+            title: '4. InnoDB locks both payment & booking rows',
+            desc: 'SELECT ... FOR UPDATE locks both tables, updates payments to SUCCESS and bookings to paid in one atomic commit.',
+            meta: 'COMMIT -> Both payments and bookings updated together',
+            logs: [
+              ['warn', 'BEGIN; SELECT ... FROM payments FOR UPDATE; SELECT ... FROM bookings FOR UPDATE;'],
+              ['ok', 'UPDATE payments SET status="SUCCESS"; UPDATE bookings SET status="paid"; COMMIT;']
+            ]
+          }
+        ],
+        login: [
+          {
+            title: '1. Studio Manager submits credentials',
+            desc: 'auth/login submits username, password, and HMAC-signed CSRF token over HTTPS.',
+            meta: 'POST /app/index.php?r=auth/login',
+            logs: [['info', 'HTTP POST /app/index.php?r=auth/login (username=admin)']]
+          },
+          {
+            title: '2. Session Fixation Guard & Cookieless Detection',
+            desc: 'If browser accepts cookies, session_regenerate_id(true) + Partitioned header runs. If iframe blocked cookies, AuthController mints signed _at token.',
+            meta: 'Cookie mode OR HMAC _at bridge activated automatically',
+            logs: [
+              ['ok', 'csrf_verify() passed; password_verify() matched hash in admin_users'],
+              ['warn', 'No cookie returned? Mints 8-hour HMAC _at token for cookieless iframe navigation']
+            ]
+          },
+          {
+            title: '3. AdminController loads Dashboard & KPIs',
+            desc: 'AdminController::__construct() verifies $_SESSION["admin"] or _at token, disables caching (Cache-Control: no-store), and renders KPIs.',
+            meta: '302 -> /app/index.php?r=admin/dashboard',
+            logs: [['info', 'AdminController::dashboard() -> rendering KPIs & Next shoots']]
+          },
+          {
+            title: '4. Live MySQL Aggregations execute',
+            desc: 'Booking::stats() & Booking::upcoming() aggregate total, pending, paid, and ZMW revenue directly from InnoDB.',
+            meta: 'SELECT COUNT(*), SUM(amount_due) FROM bookings',
+            logs: [['ok', 'Query complete -> Dashboard rendered with live Kwacha totals']]
+          }
+        ],
+        markpaid: [
+          {
+            title: '1. Manager clicks "Mark paid" on pending booking',
+            desc: 'Submits POST form with booking ID, CSRF token, and active admin session/_at token.',
+            meta: 'POST /app/index.php?r=admin/booking_action (do=paid)',
+            logs: [['info', 'HTTP POST admin/booking_action { id: "BK...", do: "paid" }']]
+          },
+          {
+            title: '2. Dual CSRF + Admin Authorization verified',
+            desc: 'Confirms valid admin session + valid CSRF token before touching financial tables.',
+            meta: 'Admin authenticated & CSRF verified',
+            logs: [['ok', 'Admin gate & CSRF check passed']]
+          },
+          {
+            title: '3. AdminController delegates to Booking::markPaid()',
+            desc: 'Ensures no pending Airtel Money prompt is still open before recording manual settlement.',
+            meta: 'Booking::markPaid($id)',
+            logs: [['info', 'Checking count_payments($pdo, $id, true) === 0']]
+          },
+          {
+            title: '4. Atomic MAN... ledger insert + booking update',
+            desc: 'Inserts a MAN... SUCCESS row into payments AND sets booking status = "paid" in one transaction.',
+            meta: 'COMMIT -> Redirect with flash confirmation',
+            logs: [
+              ['warn', 'BEGIN; SELECT ... FROM bookings WHERE booking_id=? FOR UPDATE;'],
+              ['ok', 'INSERT INTO payments (MAN..., "SUCCESS"); UPDATE bookings SET status="paid"; COMMIT;']
+            ]
+          }
+        ]
+      };
+
+      var hopIndex = -1;
+      var autoTimer = null;
+      var archNodes = document.querySelectorAll('.arch-node');
+      var traceEl = document.getElementById('arch-trace');
+      var hopTitleEl = document.getElementById('hop-title');
+      var hopDescEl = document.getElementById('hop-desc');
+      var hopMetaEl = document.getElementById('hop-meta');
+      var flowSelect = document.getElementById('flow-scenario');
+
+      function renderHop(idx, resetLog) {
+        var scenario = FLOWS[flowSelect.value];
+        var step = scenario[idx];
+        hopIndex = idx;
+        archNodes.forEach(function (n, i) {
+          n.classList.toggle('active-hop', i === idx);
+          n.classList.toggle('done-hop', i < idx);
+        });
+        hopTitleEl.textContent = step.title;
+        hopDescEl.textContent = step.desc;
+        hopMetaEl.style.display = 'block';
+        hopMetaEl.textContent = step.meta;
+        if (resetLog) traceEl.innerHTML = '';
+        step.logs.forEach(function (pair) {
+          var div = document.createElement('div');
+          div.className = 'trace-line ' + pair[0];
+          div.textContent = pair[1];
+          traceEl.appendChild(div);
+        });
+      }
+
+      function resetArch() {
+        clearInterval(autoTimer);
+        hopIndex = -1;
+        archNodes.forEach(function (n) { n.classList.remove('active-hop', 'done-hop'); });
+        hopTitleEl.textContent = 'Select a layer or click "Step next layer"';
+        hopDescEl.textContent = 'Each step explains the exact code path executed inside the ATS media house stack when a client or studio manager interacts with the system.';
+        hopMetaEl.style.display = 'none';
+        traceEl.innerHTML = '<div class="trace-line info">// Ready. Pick a scenario and click "Auto-play full request" or "Step next layer".</div>';
+      }
+
+      archNodes.forEach(function (btn) {
+        btn.addEventListener('click', function () {
+          clearInterval(autoTimer);
+          var target = Number(btn.dataset.hop);
+          traceEl.innerHTML = '';
+          for (var i = 0; i <= target; i++) renderHop(i, false);
+        });
+      });
+
+      document.getElementById('arch-step-next').addEventListener('click', function () {
+        clearInterval(autoTimer);
+        var next = hopIndex + 1;
+        if (next >= 4) { resetArch(); next = 0; }
+        renderHop(next, next === 0);
+      });
+
+      document.getElementById('arch-run-all').addEventListener('click', function () {
+        resetArch();
+        var step = 0;
+        renderHop(0, true);
+        autoTimer = setInterval(function () {
+          step++;
+          if (step >= 4) { clearInterval(autoTimer); return; }
+          renderHop(step, false);
+        }, 650);
+      });
+
+      document.getElementById('arch-reset').addEventListener('click', resetArch);
+      flowSelect.addEventListener('change', resetArch);
+
+      // ================================================================
+      // MODULE 2: LIVE CRUD SIMULATOR
+      // ================================================================
+      var PACKAGES = {
+        wedding: { label: 'Wedding Photography', price: 3500 },
+        corporate: { label: 'Corporate Shoot', price: 1800 },
+        event: { label: 'Event Coverage', price: 1500 },
+        family: { label: 'Family Portrait Session', price: 900 },
+        graduation: { label: 'Graduation Shoot', price: 700 }
+      };
+
+      var initialBookings = [
+        { id: 'BK17948382', name: 'Mutale Chanda', phone: '0972971151', service: 'wedding', date: '2026-11-19', status: 'paid', payments: ['TXN88301'], flash: false },
+        { id: 'BK17948393', name: 'Thandiwe Zulu', phone: '0978889900', service: 'corporate', date: '2026-11-23', status: 'pending_payment', payments: [], flash: false },
+        { id: 'BK17948401', name: 'Chisomo Phiri', phone: '0979991122', service: 'event', date: '2026-12-28', status: 'paid', payments: ['MAN44210'], flash: false }
+      ];
+      var bookings = [];
+      var seq = 900;
+
+      var simDate = document.getElementById('sim-date');
+      var tomorrow = new Date(Date.now() + 86400000 * 7).toISOString().split('T')[0];
+      simDate.value = tomorrow;
+
+      function fmtZMW(n) {
+        return 'K' + Number(n).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+      }
+
+      function setCrudFeedback(msg, kind) {
+        var box = document.getElementById('crud-feedback');
+        box.className = 'banner ' + (kind || 'ok');
+        box.textContent = msg;
+        box.style.display = 'block';
+      }
+
+      function logCrudSql(lines) {
+        var el = document.getElementById('crud-sql-log');
+        el.innerHTML = '';
+        lines.forEach(function (pair) {
+          var d = document.createElement('div');
+          d.className = 'trace-line ' + pair[0];
+          d.textContent = pair[1];
+          el.appendChild(d);
+        });
+      }
+
+      function renderCrud() {
+        var q = document.getElementById('sim-search').value.trim().toLowerCase();
+        var stFilter = document.getElementById('sim-filter').value;
+        var tbody = document.getElementById('crud-tbody');
+        tbody.innerHTML = '';
+
+        var total = bookings.length;
+        var pending = 0, paid = 0, rev = 0;
+        bookings.forEach(function (b) {
+          if (b.status === 'pending_payment') pending++;
+          if (b.status === 'paid') { paid++; rev += PACKAGES[b.service].price; }
+        });
+        document.getElementById('kpi-total').textContent = total;
+        document.getElementById('kpi-pending').textContent = pending;
+        document.getElementById('kpi-paid').textContent = paid;
+        document.getElementById('kpi-rev').textContent = fmtZMW(rev);
+
+        var filtered = bookings.filter(function (b) {
+          var matchQ = !q || b.name.toLowerCase().indexOf(q) !== -1 || b.id.toLowerCase().indexOf(q) !== -1;
+          var matchSt = !stFilter || b.status === stFilter;
+          return matchQ && matchSt;
+        });
+
+        if (!filtered.length) {
+          var emptyRow = document.createElement('tr');
+          emptyRow.innerHTML = '<td colspan="6">No matching bookings found.</td>';
+          tbody.appendChild(emptyRow);
+          return;
+        }
+
+        filtered.forEach(function (b) {
+          var pkg = PACKAGES[b.service];
+          var tr = document.createElement('tr');
+          if (b.flash) { tr.className = 'row-flash'; b.flash = false; }
+
+          var actionsHtml = '';
+          if (b.status === 'pending_payment') {
+            actionsHtml += '<button type="button" class="btn btn-primary btn-sm" data-act="pay" data-id="' + b.id + '">Mark paid</button> ';
+            actionsHtml += '<button type="button" class="btn btn-outline btn-sm" data-act="upgrade" data-id="' + b.id + '">Swap pkg</button> ';
+          }
+          if (b.status !== 'paid') {
+            actionsHtml += '<button type="button" class="btn btn-outline btn-sm" data-act="delete" data-id="' + b.id + '">Delete</button>';
+          } else {
+            actionsHtml += '<span style="font-family:var(--mono);font-size:.74rem;color:var(--muted);">Locked (' + (b.payments[0] || 'PAID') + ')</span>';
+          }
+
+          tr.innerHTML =
+            '<td><code>' + b.id + '</code><br><small>' + b.date + '</small></td>' +
+            '<td><strong>' + b.name + '</strong><br><small>' + b.phone + '</small></td>' +
+            '<td>' + pkg.label + '</td>' +
+            '<td>' + fmtZMW(pkg.price) + '</td>' +
+            '<td><span class="status-text st-' + b.status + '">' + b.status + '</span></td>' +
+            '<td style="white-space:nowrap;">' + actionsHtml + '</td>';
+          tbody.appendChild(tr);
+        });
+      }
+
+      function resetCrud() {
+        bookings = initialBookings.map(function (b) {
+          return { id: b.id, name: b.name, phone: b.phone, service: b.service, date: b.date, status: b.status, payments: b.payments.slice(), flash: false };
+        });
+        document.getElementById('crud-feedback').style.display = 'none';
+        logCrudSql([['info', '-- Reset to initial seeded InnoDB rows (3 bookings)']]);
+        renderCrud();
+      }
+
+      document.getElementById('sim-create-form').addEventListener('submit', function (e) {
+        e.preventDefault();
+        var name = document.getElementById('sim-name').value.trim();
+        var phone = document.getElementById('sim-phone').value.trim();
+        var service = document.getElementById('sim-service').value;
+        var date = document.getElementById('sim-date').value;
+        if (!name || !phone || !date) {
+          setCrudFeedback('Please fill in client name, phone, and date.', 'err');
+          return;
+        }
+        seq++;
+        var newId = 'BK17948' + seq;
+        bookings.unshift({ id: newId, name: name, phone: phone, service: service, date: date, status: 'pending_payment', payments: [], flash: true });
+        document.getElementById('sim-name').value = '';
+        document.getElementById('sim-phone').value = '';
+        setCrudFeedback('Created booking ' + newId + ' for ' + name + ' (' + PACKAGES[service].label + ').', 'ok');
+        logCrudSql([
+          ['warn', 'BEGIN; SELECT service_id, price FROM services WHERE code="' + service + '" LOCK IN SHARE MODE;'],
+          ['ok', 'INSERT INTO customers (full_name, phone) VALUES ("' + name + '", "' + phone + '") ON DUPLICATE KEY UPDATE ...;'],
+          ['ok', 'INSERT INTO bookings (booking_id, service_id, amount_due, status) VALUES ("' + newId + '", ..., "pending_payment"); COMMIT;']
+        ]);
+        renderCrud();
+      });
+
+      document.getElementById('crud-tbody').addEventListener('click', function (e) {
+        var btn = e.target.closest('button[data-act]');
+        if (!btn) return;
+        var act = btn.dataset.act;
+        var id = btn.dataset.id;
+        var idx = bookings.findIndex(function (x) { return x.id === id; });
+        if (idx === -1) return;
+        var b = bookings[idx];
+
+        if (act === 'pay') {
+          var manId = 'MAN' + Math.floor(10000 + Math.random() * 89999);
+          b.status = 'paid';
+          b.payments.push(manId);
+          b.flash = true;
+          setCrudFeedback('ACID Mark Paid: recorded ' + manId + ' and updated ' + b.id + ' to paid.', 'ok');
+          logCrudSql([
+            ['warn', 'BEGIN; SELECT status FROM bookings WHERE booking_id="' + b.id + '" FOR UPDATE;'],
+            ['ok', 'INSERT INTO payments (transaction_id, booking_id, status) VALUES ("' + manId + '", "' + b.id + '", "SUCCESS");'],
+            ['ok', 'UPDATE bookings SET status="paid" WHERE booking_id="' + b.id + '"; COMMIT;']
+          ]);
+          renderCrud();
+        } else if (act === 'upgrade') {
+          var order = ['graduation', 'family', 'event', 'corporate', 'wedding'];
+          b.service = order[(order.indexOf(b.service) + 1) % order.length];
+          b.flash = true;
+          setCrudFeedback('Updated ' + b.id + ' package to ' + PACKAGES[b.service].label + ' (' + fmtZMW(PACKAGES[b.service].price) + ').', 'ok');
+          logCrudSql([
+            ['warn', 'BEGIN; SELECT status FROM bookings WHERE booking_id="' + b.id + '" FOR UPDATE;'],
+            ['ok', 'UPDATE bookings SET service_id=..., amount_due=' + PACKAGES[b.service].price + ' WHERE booking_id="' + b.id + '"; COMMIT;']
+          ]);
+          renderCrud();
+        } else if (act === 'delete') {
+          if (btn.dataset.armed !== '1') {
+            btn.dataset.armed = '1';
+            btn.textContent = 'Confirm delete';
+            btn.className = 'btn btn-danger btn-sm';
+            setTimeout(function () {
+              if (document.body.contains(btn)) {
+                btn.dataset.armed = '';
+                btn.textContent = 'Delete';
+                btn.className = 'btn btn-outline btn-sm';
+              }
+            }, 4000);
+            return;
+          }
+          if (b.payments.length > 0) {
+            b.status = 'cancelled';
+            b.flash = true;
+            setCrudFeedback('Payment history exists — transitioned ' + b.id + ' to cancelled to preserve audit ledger.', 'warn');
+            logCrudSql([
+              ['warn', 'BEGIN; SELECT COUNT(*) FROM payments WHERE booking_id="' + b.id + '" FOR UPDATE; -- > 0'],
+              ['ok', 'UPDATE bookings SET status="cancelled" WHERE booking_id="' + b.id + '"; COMMIT;']
+            ]);
+          } else {
+            bookings.splice(idx, 1);
+            setCrudFeedback('0 payment rows — hard-deleted booking ' + b.id + ' cleanly.', 'ok');
+            logCrudSql([
+              ['warn', 'BEGIN; SELECT COUNT(*) FROM payments WHERE booking_id="' + b.id + '" FOR UPDATE; -- = 0'],
+              ['ok', 'DELETE FROM bookings WHERE booking_id="' + b.id + '"; COMMIT;']
+            ]);
+          }
+          renderCrud();
+        }
+      });
+
+      document.getElementById('sim-search').addEventListener('input', renderCrud);
+      document.getElementById('sim-filter').addEventListener('change', renderCrud);
+      document.getElementById('crud-reset').addEventListener('click', resetCrud);
+      resetCrud();
+
+      // ================================================================
+      // MODULE 3: ACID TRANSACTION & ROLLBACK LAB
+      // ================================================================
+      var acidTimer = null;
+      var acidStepsEl = document.getElementById('acid-steps');
+      var acidDbEl = document.getElementById('acid-db-state');
+      var acidSqlEl = document.getElementById('acid-sql');
+      var acidSummaryEl = document.getElementById('acid-summary');
+
+      function runAcidScenario(kind) {
+        clearInterval(acidTimer);
+        acidSummaryEl.style.display = 'none';
+        acidSqlEl.innerHTML = '';
+
+        var scenarios = {
+          commit: {
+            summary: ['ok', 'COMMITTED: Both payments (SUCCESS) and bookings (paid) persisted atomically. Zero partial states possible.'],
+            frames: [
+              {
+                step: ['1. Open InnoDB transaction & acquire row lock', 'BEGIN / FOR UPDATE'],
+                db: [['pending_payment (K3,500)', 'st-pending_payment', 'ROW LOCKED', 'st-LOCKED'], ['0 rows', '', 'Unlocked', '']],
+                sql: ['warn', 'BEGIN; SELECT status FROM bookings WHERE booking_id="BK2026-8841" FOR UPDATE;']
+              },
+              {
+                step: ['2. Insert PENDING payment record', 'INSERT INTO payments'],
+                db: [['pending_payment (K3,500)', 'st-pending_payment', 'ROW LOCKED', 'st-LOCKED'], ['TXN77201 · PENDING', 'st-PENDING', 'ROW LOCKED', 'st-LOCKED']],
+                sql: ['info', 'INSERT INTO payments (transaction_id, booking_id, amount, status) VALUES ("TXN77201", "BK2026-8841", 3500, "PENDING");']
+              },
+              {
+                step: ['3. Gateway confirms -> Update both tables & COMMIT', 'COMMIT'],
+                db: [['paid (K3,500)', 'st-paid', 'Released', ''], ['TXN77201 · SUCCESS', 'st-SUCCESS', 'Released', '']],
+                sql: ['ok', 'UPDATE payments SET status="SUCCESS"; UPDATE bookings SET status="paid"; COMMIT;'],
+                cls: 'committed'
+              }
+            ]
+          },
+          rollback: {
+            summary: ['err', 'ROLLED BACK: Gateway threw an error mid-transaction. Automatic ROLLBACK erased the uncommitted payment row — database stays 100% consistent.'],
+            frames: [
+              {
+                step: ['1. Open InnoDB transaction & lock booking row', 'BEGIN / FOR UPDATE'],
+                db: [['pending_payment (K3,500)', 'st-pending_payment', 'ROW LOCKED', 'st-LOCKED'], ['0 rows', '', 'Unlocked', '']],
+                sql: ['warn', 'BEGIN; SELECT status FROM bookings WHERE booking_id="BK2026-8841" FOR UPDATE;']
+              },
+              {
+                step: ['2. Insert temporary PENDING payment row', 'INSERT INTO payments'],
+                db: [['pending_payment (K3,500)', 'st-pending_payment', 'ROW LOCKED', 'st-LOCKED'], ['TXN77202 · PENDING (uncommitted)', 'st-PENDING', 'ROW LOCKED', 'st-LOCKED']],
+                sql: ['info', 'INSERT INTO payments (...) VALUES ("TXN77202", "BK2026-8841", 3500, "PENDING");']
+              },
+              {
+                step: ['3. Exception thrown! -> Catch block triggers ROLLBACK', 'ROLLBACK'],
+                db: [['pending_payment (K3,500)', 'st-pending_payment', 'Released', ''], ['0 rows (reverted cleanly)', 'st-ROLLED_BACK', 'Released', '']],
+                sql: ['err', 'ERROR: Airtel Gateway 502 Timeout -> ROLLBACK; -- 0 orphaned rows left behind'],
+                cls: 'rolledback'
+              }
+            ]
+          },
+          race: {
+            summary: ['warn', 'ISOLATION GUARD: Request #2 waited on FOR UPDATE, saw the existing unpaid booking/paid status, and returned idempotently (or 409) without creating a duplicate booking.'],
+            frames: [
+              {
+                step: ['1. Request A & Request B arrive within 5ms', 'CONCURRENT POST'],
+                db: [['pending_payment (K3,500)', 'st-pending_payment', 'Req A holds LOCK', 'st-LOCKED'], ['0 rows', '', 'Req B waiting...', 'st-PENDING']],
+                sql: ['warn', 'Req A: BEGIN; SELECT * FROM bookings WHERE ... FOR UPDATE; (acquired)']
+              },
+              {
+                step: ['2. Request A commits; Request B acquires lock next', 'SERIALIZED READ'],
+                db: [['pending_payment (K3,500)', 'st-pending_payment', 'Req B holds LOCK', 'st-LOCKED'], ['0 rows', '', 'Unlocked', '']],
+                sql: ['info', 'Req B unblocks -> finds existing BK2026-8841 matching (customer, service, date)']
+              },
+              {
+                step: ['3. Request B returns existing ID (0 duplicates created)', 'IDEMPOTENT COMMIT'],
+                db: [['pending_payment (K3,500)', 'st-pending_payment', 'Released', ''], ['1 unique booking only', 'st-COMMITTED', 'Released', '']],
+                sql: ['ok', 'Req B: Returns existing BK2026-8841 (or HTTP 409 if paid) -> COMMIT;'],
+                cls: 'committed'
+              }
+            ]
+          }
+        }[kind];
+
+        acidStepsEl.innerHTML = '';
+        var idx = 0;
+        function tick() {
+          var f = scenarios.frames[idx];
+          var div = document.createElement('div');
+          div.className = 'acid-step ' + (f.cls || 'running');
+          div.innerHTML = '<span>' + f.step[0] + '</span><code>' + f.step[1] + '</code>';
+          acidStepsEl.appendChild(div);
+
+          acidDbEl.innerHTML =
+            '<tr><td><code>bookings</code></td><td>BK2026-8841</td>' +
+            '<td><span class="status-text ' + f.db[0][1] + '">' + f.db[0][0] + '</span></td>' +
+            '<td><span class="status-text ' + f.db[0][3] + '">' + f.db[0][2] + '</span></td></tr>' +
+            '<tr><td><code>payments</code></td><td>TXN</td>' +
+            '<td><span class="status-text ' + f.db[1][1] + '">' + f.db[1][0] + '</span></td>' +
+            '<td><span class="status-text ' + f.db[1][3] + '">' + f.db[1][2] + '</span></td></tr>';
+
+          var sLine = document.createElement('div');
+          sLine.className = 'trace-line ' + f.sql[0];
+          sLine.textContent = f.sql[1];
+          acidSqlEl.appendChild(sLine);
+
+          idx++;
+          if (idx >= scenarios.frames.length) {
+            clearInterval(acidTimer);
+            acidSummaryEl.className = 'banner ' + scenarios.summary[0];
+            acidSummaryEl.textContent = scenarios.summary[1];
+            acidSummaryEl.style.display = 'block';
+          }
+        }
+        tick();
+        acidTimer = setInterval(tick, 750);
+      }
+
+      document.getElementById('acid-commit-btn').addEventListener('click', function () { runAcidScenario('commit'); });
+      document.getElementById('acid-rollback-btn').addEventListener('click', function () { runAcidScenario('rollback'); });
+      document.getElementById('acid-race-btn').addEventListener('click', function () { runAcidScenario('race'); });
+
+      // ================================================================
+      // MODULE 4: SECURITY, IFRAME CSRF & XAMPP PORTABILITY
+      // ================================================================
+      var envIframeBtn = document.getElementById('env-iframe');
+      var envXamppBtn = document.getElementById('env-xampp');
+      var envHeadersEl = document.getElementById('env-headers');
+
+      function setEnvMode(mode) {
+        envIframeBtn.setAttribute('aria-pressed', mode === 'iframe' ? 'true' : 'false');
+        envXamppBtn.setAttribute('aria-pressed', mode === 'xampp' ? 'true' : 'false');
+        if (mode === 'iframe') {
+          envHeadersEl.innerHTML =
+            '<div class="trace-line info">Detected: X-Forwarded-Proto: https / Origin: https://...</div>' +
+            '<div class="trace-line ok">Set-Cookie: PHPSESSID=...; Path=/; HttpOnly; SameSite=None; Secure; Partitioned</div>' +
+            '<div class="trace-line warn">Fallback: If browser blocks 3rd-party cookies, HMAC _at bridge &amp; HMAC CSRF keep forms + Admin active</div>';
+        } else {
+          envHeadersEl.innerHTML =
+            '<div class="trace-line info">Detected: Local Apache HTTP (http://localhost/ats-media-house/)</div>' +
+            '<div class="trace-line ok">Set-Cookie: PHPSESSID=...; Path=/; HttpOnly; SameSite=Lax</div>' +
+            '<div class="trace-line ok">url(): Relative paths derived from SCRIPT_NAME -> works in /ats-media-house/ subfolder</div>';
+        }
+      }
+      envIframeBtn.addEventListener('click', function () { setEnvMode('iframe'); });
+      envXamppBtn.addEventListener('click', function () { setEnvMode('xampp'); });
+      setEnvMode('iframe');
+
+      var csrfRes = document.getElementById('csrf-sim-result');
+      var csrfLog = document.getElementById('csrf-sim-log');
+      document.getElementById('test-csrf-valid').addEventListener('click', function () {
+        csrfRes.className = 'banner ok';
+        csrfRes.textContent = 'HTTP 302 PASS: HMAC-SHA256 signature verified against storage/.csrf_secret + Origin matched host (worked even with empty PHPSESSID).';
+        csrfLog.innerHTML =
+          '<div class="trace-line info">POST csrf=1794840090.a97ce1b07dc6.f2a88f31029c...</div>' +
+          '<div class="trace-line ok">hash_equals(expectedSig, postedSig) === true &amp;&amp; notExpired (&lt;= 12h) === true</div>';
+      });
+      document.getElementById('test-csrf-forged').addEventListener('click', function () {
+        csrfRes.className = 'banner err';
+        csrfRes.textContent = 'HTTP 400 BLOCKED: Tampered token rejected. Fresh token issued inline so a real user can retry without losing form inputs.';
+        csrfLog.innerHTML =
+          '<div class="trace-line err">POST csrf=12345.fake.signature -> hash_equals() === false</div>' +
+          '<div class="trace-line warn">unset($_SESSION["csrf"]); http_response_code(400); // Re-renders form with fresh token</div>';
+      });
+    })();
+  </script>
+</body>
+</html>

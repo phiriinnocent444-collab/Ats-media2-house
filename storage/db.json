@@ -1,0 +1,453 @@
+{
+  "nextCustomerId": 11,
+  "nextServiceId": 6,
+  "nextPhotoId": 5,
+  "nextAdminId": 2,
+  "customers": [
+    {
+      "id": 1,
+      "fullName": "Chanda Test",
+      "phone": "972971151",
+      "email": "chanda@example.com",
+      "createdAt": "2026-11-16T14:01:18.793Z",
+      "updatedAt": "2026-11-16T14:01:50.555Z"
+    },
+    {
+      "id": 2,
+      "fullName": "Mwila Phiri",
+      "phone": "974112233",
+      "email": null,
+      "createdAt": "2026-11-16T14:01:18.793Z",
+      "updatedAt": "2026-11-16T14:01:18.793Z"
+    },
+    {
+      "id": 3,
+      "fullName": "Natasha Banda",
+      "phone": "976445566",
+      "email": "natasha@example.com",
+      "createdAt": "2026-11-16T14:01:18.793Z",
+      "updatedAt": "2026-11-16T14:01:18.793Z"
+    },
+    {
+      "id": 4,
+      "fullName": "Kondwani Tembo",
+      "phone": "975889900",
+      "email": null,
+      "createdAt": "2026-11-16T14:01:18.793Z",
+      "updatedAt": "2026-11-16T14:01:18.793Z"
+    },
+    {
+      "id": 5,
+      "fullName": "Thandiwe Zulu",
+      "phone": "977334455",
+      "email": "thandiwe@example.com",
+      "createdAt": "2026-11-16T14:01:18.793Z",
+      "updatedAt": "2026-11-16T14:01:18.793Z"
+    },
+    {
+      "id": 6,
+      "fullName": "Mutale Lungu",
+      "phone": "971223344",
+      "email": null,
+      "createdAt": "2026-11-16T14:01:18.793Z",
+      "updatedAt": "2026-11-16T14:01:18.793Z"
+    },
+    {
+      "id": 7,
+      "fullName": "Precious Mumba",
+      "phone": "978990011",
+      "email": null,
+      "createdAt": "2026-11-16T14:01:18.793Z",
+      "updatedAt": "2026-11-16T14:01:18.793Z"
+    },
+    {
+      "id": 8,
+      "fullName": "Joseph Chisenga",
+      "phone": "973667788",
+      "email": "joseph@example.com",
+      "createdAt": "2026-11-16T14:01:18.793Z",
+      "updatedAt": "2026-11-16T14:01:18.793Z"
+    },
+    {
+      "id": 9,
+      "fullName": "Esther Bwalya",
+      "phone": "979123456",
+      "email": null,
+      "createdAt": "2026-11-16T14:01:18.793Z",
+      "updatedAt": "2026-11-16T14:01:18.793Z"
+    },
+    {
+      "id": 10,
+      "fullName": "Mutinta Chileshe",
+      "phone": "975554321",
+      "email": null,
+      "createdAt": "2026-11-16T14:02:56.035Z",
+      "updatedAt": "2026-11-16T14:02:56.035Z"
+    }
+  ],
+  "services": [
+    {
+      "id": 1,
+      "code": "wedding",
+      "label": "Wedding Photography",
+      "description": "Full-day coverage of your ceremony and reception, edited highlight gallery.",
+      "price": 3500,
+      "isActive": true
+    },
+    {
+      "id": 2,
+      "code": "corporate",
+      "label": "Corporate Shoot",
+      "description": "Headshots, office and event photography for your business or team.",
+      "price": 1800,
+      "isActive": true
+    },
+    {
+      "id": 3,
+      "code": "event",
+      "label": "Event Coverage",
+      "description": "Parties, launches and celebrations, delivered within 48 hours.",
+      "price": 1500,
+      "isActive": true
+    },
+    {
+      "id": 4,
+      "code": "family",
+      "label": "Family Portrait Session",
+      "description": "A relaxed studio or outdoor session for the whole family.",
+      "price": 900,
+      "isActive": true
+    },
+    {
+      "id": 5,
+      "code": "graduation",
+      "label": "Graduation Shoot",
+      "description": "Shoot your graduation memories with us — gown, cap and all.",
+      "price": 700,
+      "isActive": true
+    }
+  ],
+  "bookings": [
+    {
+      "id": "BK2026101",
+      "customerId": 1,
+      "serviceId": 1,
+      "fullName": "Chanda Mwansa",
+      "phone": "972971151",
+      "email": "chanda@example.com",
+      "service": "wedding",
+      "serviceLabel": "Wedding Photography",
+      "amount": 3500,
+      "eventDate": "2026-11-28",
+      "notes": "Wedding venue near Kabulonga Gardens",
+      "status": "paid",
+      "createdAt": "2026-11-16T14:01:18.793Z",
+      "updatedAt": "2026-11-16T14:01:18.793Z"
+    },
+    {
+      "id": "BK2026102",
+      "customerId": 2,
+      "serviceId": 2,
+      "fullName": "Mwila Phiri",
+      "phone": "974112233",
+      "email": null,
+      "service": "corporate",
+      "serviceLabel": "Corporate Shoot",
+      "amount": 1800,
+      "eventDate": "2026-11-21",
+      "notes": "Corporate headshots for 12 staff at Cairo Road",
+      "status": "paid",
+      "createdAt": "2026-11-16T14:01:18.793Z",
+      "updatedAt": "2026-11-16T14:01:18.793Z"
+    },
+    {
+      "id": "BK2026103",
+      "customerId": 3,
+      "serviceId": 5,
+      "fullName": "Natasha Banda",
+      "phone": "976445566",
+      "email": "natasha@example.com",
+      "service": "graduation",
+      "serviceLabel": "Graduation Shoot",
+      "amount": 700,
+      "eventDate": "2026-11-19",
+      "notes": "Graduation at UNZA Great East Road campus",
+      "status": "pending_payment",
+      "createdAt": "2026-11-16T14:01:18.793Z",
+      "updatedAt": "2026-11-16T14:01:18.793Z"
+    },
+    {
+      "id": "BK2026104",
+      "customerId": 4,
+      "serviceId": 3,
+      "fullName": "Kondwani Tembo",
+      "phone": "975889900",
+      "email": null,
+      "service": "event",
+      "serviceLabel": "Event Coverage",
+      "amount": 1500,
+      "eventDate": "2026-12-04",
+      "notes": "Venue is Mulungushi Conference Centre",
+      "status": "paid",
+      "createdAt": "2026-11-16T14:01:18.793Z",
+      "updatedAt": "2026-11-16T14:01:18.793Z"
+    },
+    {
+      "id": "BK2026105",
+      "customerId": 5,
+      "serviceId": 4,
+      "fullName": "Thandiwe Zulu",
+      "phone": "977334455",
+      "email": "thandiwe@example.com",
+      "service": "family",
+      "serviceLabel": "Family Portrait Session",
+      "amount": 900,
+      "eventDate": "2026-11-25",
+      "notes": "Outdoor family shoot at Munda Wanga",
+      "status": "pending_payment",
+      "createdAt": "2026-11-16T14:01:18.793Z",
+      "updatedAt": "2026-11-16T14:01:18.793Z"
+    },
+    {
+      "id": "BK2026106",
+      "customerId": 6,
+      "serviceId": 1,
+      "fullName": "Mutale Lungu",
+      "phone": "971223344",
+      "email": null,
+      "service": "wedding",
+      "serviceLabel": "Wedding Photography",
+      "amount": 3500,
+      "eventDate": "2026-12-20",
+      "notes": "Need 200 edited photos for church and reception",
+      "status": "paid",
+      "createdAt": "2026-11-16T14:01:18.793Z",
+      "updatedAt": "2026-11-16T14:01:18.793Z"
+    },
+    {
+      "id": "BK2026107",
+      "customerId": 7,
+      "serviceId": 5,
+      "fullName": "Precious Mumba",
+      "phone": "978990011",
+      "email": null,
+      "service": "graduation",
+      "serviceLabel": "Graduation Shoot",
+      "amount": 700,
+      "eventDate": "2026-12-01",
+      "notes": "Morning slot with family portraits included",
+      "status": "pending_payment",
+      "createdAt": "2026-11-16T14:01:18.793Z",
+      "updatedAt": "2026-11-16T14:01:18.793Z"
+    },
+    {
+      "id": "BK2026108",
+      "customerId": 8,
+      "serviceId": 2,
+      "fullName": "Joseph Chisenga",
+      "phone": "973667788",
+      "email": "joseph@example.com",
+      "service": "corporate",
+      "serviceLabel": "Corporate Shoot",
+      "amount": 1800,
+      "eventDate": "2026-12-10",
+      "notes": "Annual leadership summit coverage",
+      "status": "paid",
+      "createdAt": "2026-11-16T14:01:18.793Z",
+      "updatedAt": "2026-11-16T14:01:18.793Z"
+    },
+    {
+      "id": "BK2026109",
+      "customerId": 9,
+      "serviceId": 4,
+      "fullName": "Esther Bwalya",
+      "phone": "979123456",
+      "email": null,
+      "service": "family",
+      "serviceLabel": "Family Portrait Session",
+      "amount": 900,
+      "eventDate": "2026-12-28",
+      "notes": "Golden hour garden portraits",
+      "status": "pending_payment",
+      "createdAt": "2026-11-16T14:01:18.793Z",
+      "updatedAt": "2026-11-16T14:01:18.793Z"
+    },
+    {
+      "id": "BK2026110",
+      "customerId": 1,
+      "serviceId": 4,
+      "fullName": "Chanda Mwansa",
+      "phone": "972971151",
+      "email": "chanda@example.com",
+      "service": "family",
+      "serviceLabel": "Family Portrait Session",
+      "amount": 900,
+      "eventDate": "2027-01-10",
+      "notes": "Pre-wedding family portrait session",
+      "status": "paid",
+      "createdAt": "2026-11-16T14:01:18.793Z",
+      "updatedAt": "2026-11-16T14:01:18.793Z"
+    },
+    {
+      "id": "BK1794837710555556",
+      "customerId": 1,
+      "serviceId": 1,
+      "fullName": "Chanda Test",
+      "phone": "972971151",
+      "email": null,
+      "service": "wedding",
+      "serviceLabel": "Wedding Photography",
+      "amount": 3500,
+      "eventDate": "2026-12-28",
+      "notes": "Lusaka Garden Reception",
+      "status": "paid",
+      "createdAt": "2026-11-16T14:01:50.555Z",
+      "updatedAt": "2026-11-16T14:01:52.788Z"
+    },
+    {
+      "id": "BK1794837776035188",
+      "customerId": 10,
+      "serviceId": 5,
+      "fullName": "Mutinta Chileshe",
+      "phone": "975554321",
+      "email": null,
+      "service": "graduation",
+      "serviceLabel": "Graduation Shoot",
+      "amount": 700,
+      "eventDate": "2026-12-22",
+      "notes": "UNZA Graduation shoot",
+      "status": "pending_payment",
+      "createdAt": "2026-11-16T14:02:56.035Z",
+      "updatedAt": "2026-11-16T14:02:56.035Z"
+    }
+  ],
+  "payments": [
+    {
+      "transactionId": "TXN2026101",
+      "bookingId": "BK2026101",
+      "msisdn": "972971151",
+      "amount": 3500,
+      "status": "SUCCESS",
+      "airtelResponse": "{\"mode\":\"seed\",\"status\":\"TS\"}",
+      "error": null,
+      "createdAt": "2026-11-16T14:01:18.793Z",
+      "lastChecked": "2026-11-16T14:01:18.793Z"
+    },
+    {
+      "transactionId": "TXN2026102",
+      "bookingId": "BK2026102",
+      "msisdn": "974112233",
+      "amount": 1800,
+      "status": "SUCCESS",
+      "airtelResponse": "{\"mode\":\"seed\",\"status\":\"TS\"}",
+      "error": null,
+      "createdAt": "2026-11-16T14:01:18.793Z",
+      "lastChecked": "2026-11-16T14:01:18.793Z"
+    },
+    {
+      "transactionId": "TXN2026104",
+      "bookingId": "BK2026104",
+      "msisdn": "975889900",
+      "amount": 1500,
+      "status": "SUCCESS",
+      "airtelResponse": "{\"mode\":\"seed\",\"status\":\"TS\"}",
+      "error": null,
+      "createdAt": "2026-11-16T14:01:18.793Z",
+      "lastChecked": "2026-11-16T14:01:18.793Z"
+    },
+    {
+      "transactionId": "TXN2026106",
+      "bookingId": "BK2026106",
+      "msisdn": "971223344",
+      "amount": 3500,
+      "status": "SUCCESS",
+      "airtelResponse": "{\"mode\":\"seed\",\"status\":\"TS\"}",
+      "error": null,
+      "createdAt": "2026-11-16T14:01:18.793Z",
+      "lastChecked": "2026-11-16T14:01:18.793Z"
+    },
+    {
+      "transactionId": "TXN2026108",
+      "bookingId": "BK2026108",
+      "msisdn": "973667788",
+      "amount": 1800,
+      "status": "SUCCESS",
+      "airtelResponse": "{\"mode\":\"seed\",\"status\":\"TS\"}",
+      "error": null,
+      "createdAt": "2026-11-16T14:01:18.793Z",
+      "lastChecked": "2026-11-16T14:01:18.793Z"
+    },
+    {
+      "transactionId": "TXN2026110",
+      "bookingId": "BK2026110",
+      "msisdn": "972971151",
+      "amount": 900,
+      "status": "SUCCESS",
+      "airtelResponse": "{\"mode\":\"seed\",\"status\":\"TS\"}",
+      "error": null,
+      "createdAt": "2026-11-16T14:01:18.793Z",
+      "lastChecked": "2026-11-16T14:01:18.793Z"
+    },
+    {
+      "transactionId": "TXN1794837710577484",
+      "bookingId": "BK1794837710555556",
+      "msisdn": "972971151",
+      "amount": 3500,
+      "status": "SUCCESS",
+      "airtelResponse": "{\"mode\":\"uat_simulation\",\"settled\":true}",
+      "error": null,
+      "createdAt": "2026-11-16T14:01:50.577Z",
+      "lastChecked": "2026-11-16T14:01:52.788Z"
+    }
+  ],
+  "adminUsers": [
+    {
+      "id": 1,
+      "username": "admin",
+      "passwordHash": "f0f129db53624461908db6681087baa5:86f37921cc52ce31266b7bbbf3e40d9cacb437c0875a0830e3e6be05edb345483c4ff72ad8791d0c9b6948d97285d56fd765340b6c4892660680a1e27d2b92bc",
+      "createdAt": "2026-11-16T14:01:18.793Z"
+    }
+  ],
+  "gallery": [
+    {
+      "id": 1,
+      "title": "Kabulonga Evening Reception",
+      "category": "Wedding",
+      "filename": "gallery_wedding_ceremony_1794837382397.jpg",
+      "imageUrl": "/src/assets/images/gallery_wedding_ceremony_1794837382397.jpg",
+      "thumbUrl": "/src/assets/images/gallery_wedding_ceremony_1794837382397.jpg",
+      "uploadedBy": "admin",
+      "createdAt": "2026-11-16T14:01:18.793Z"
+    },
+    {
+      "id": 2,
+      "title": "Lusaka Executive Portrait",
+      "category": "Corporate",
+      "filename": "gallery_corporate_headshot_1794837382217.jpg",
+      "imageUrl": "/src/assets/images/gallery_corporate_headshot_1794837382217.jpg",
+      "thumbUrl": "/src/assets/images/gallery_corporate_headshot_1794837382217.jpg",
+      "uploadedBy": "admin",
+      "createdAt": "2026-11-16T14:01:18.793Z"
+    },
+    {
+      "id": 3,
+      "title": "Annual Gala & Banquet",
+      "category": "Event",
+      "filename": "gallery_event_coverage_1794837382832.jpg",
+      "imageUrl": "/src/assets/images/gallery_event_coverage_1794837382832.jpg",
+      "thumbUrl": "/src/assets/images/gallery_event_coverage_1794837382832.jpg",
+      "uploadedBy": "admin",
+      "createdAt": "2026-11-16T14:01:18.793Z"
+    },
+    {
+      "id": 4,
+      "title": "UNZA Graduation Memories",
+      "category": "Graduation",
+      "filename": "gallery_graduation_shoot_1794837383565.jpg",
+      "imageUrl": "/src/assets/images/gallery_graduation_shoot_1794837383565.jpg",
+      "thumbUrl": "/src/assets/images/gallery_graduation_shoot_1794837383565.jpg",
+      "uploadedBy": "admin",
+      "createdAt": "2026-11-16T14:01:18.793Z"
+    }
+  ]
+}

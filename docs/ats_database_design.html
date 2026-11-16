@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>ATS media house – Database Design (Conceptual, Logical, Physical)</title>
+<style>
+:root{--bg:#fbfaf7;--fg:#1c1b19;--mut:#6a665e;--card:#fff;--line:#d9d4c8;--acc:#9a3412;--ent:#fde8d4;--rel:#e0ecf7;--att:#fff;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#16150f;--fg:#ece8dd;--mut:#a09b8e;--card:#1f1e17;--line:#3a382e;--acc:#fb923c;--ent:#4a2a14;--rel:#17324a;--att:#22211a}}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;background:var(--bg);color:var(--fg);font:16px/1.6 system-ui,-apple-system,"Segoe UI",sans-serif}
+main{max-width:1000px;margin:0 auto;padding:24px 16px 64px}
+h1{font:700 2rem/1.2 Georgia,serif;margin:.2em 0}h2{font:700 1.4rem Georgia,serif;margin:2.2em 0 .4em;border-bottom:2px solid var(--acc);padding-bottom:4px}h3{margin:1.4em 0 .3em}
+p.sub{color:var(--mut);margin-top:0}
+.scroll{overflow-x:auto;border:1px solid var(--line);border-radius:8px;background:var(--card);margin:12px 0}
+table{border-collapse:collapse;width:100%;font-size:.9rem}th,td{padding:7px 10px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top}th{background:var(--ent)}
+code,pre{font-family:ui-monospace,Consolas,monospace;font-size:.85rem}pre{background:var(--card);border:1px solid var(--line);border-radius:8px;padding:12px;overflow-x:auto}
+svg text{fill:var(--fg);font:12px system-ui,sans-serif;text-anchor:middle;dominant-baseline:central}
+.ln{stroke:var(--fg);stroke-width:1.3}.dbl{stroke:var(--fg);stroke-width:6}.gap{stroke:var(--card);stroke-width:2.4}
+.E{fill:var(--ent);stroke:var(--fg);stroke-width:2}.R{fill:var(--rel);stroke:var(--fg);stroke-width:1.5}.A{fill:var(--att);stroke:var(--fg);stroke-width:1.2}
+.K{text-decoration:underline;font-weight:700}.card{font-weight:700;fill:var(--acc)!important;font-size:14px!important}
+.pill{display:inline-block;background:var(--ent);border-radius:99px;padding:1px 10px;font-size:.8rem;margin-right:4px}
+</style></head><body><main>
+<h1>ATS media house: Database Design</h1>
+<p class="sub">Booking &amp; Airtel Money payment system · Conceptual → Logical → Physical · CRUD · ACID</p>
+
+<h2>1. Conceptual design (Chen ER diagram)</h2>
+<p>The conceptual model describes the business and ignores the DBMS. There are four entity types: <b>Customer</b>, <b>Service</b> (photography package), <b>Booking</b> and <b>Payment</b>.</p>
+<div class="scroll"><svg id="er" viewBox="0 0 1480 960" width="1480" style="max-width:none;min-width:1100px" role="img" aria-label="Chen notation ER diagram"></svg></div>
+<p><b>Notation (Chen):</b> rectangle = entity · diamond = relationship · ellipse = attribute · <span class="K">underlined</span> = key attribute · double line = total participation · <b>1</b>/<b>N</b> = cardinality. Technical logging attributes (<code>airtel_response</code>, <code>error</code>) are left out of the diagram and appear in the physical design.</p>
+
+<h3>Relationships and business rules</h3>
+<div class="scroll"><table>
+<tr><th>Relationship</th><th>Entities</th><th>Cardinality</th><th>Participation / rule</th></tr>
+<tr><td>Makes</td><td>Customer – Booking</td><td>1 : N</td><td>Every booking belongs to exactly one customer (total). A customer is identified by phone number.</td></tr>
+<tr><td>Is_for</td><td>Service – Booking</td><td>1 : N</td><td>Every booking is for exactly one package (total). A package may have no bookings yet.</td></tr>
+<tr><td>Settled_by</td><td>Booking – Payment</td><td>1 : N</td><td>A payment belongs to exactly one booking (total). A booking can have several attempts (failed, then successful).</td></tr>
+</table></div>
+<p>State rules: booking <code>pending_payment → paid | cancelled</code>; payment <code>PENDING → SUCCESS | FAILED</code>. Final states never change. Customer–Booking, Service–Booking and Booking–Payment are all 1:N, so no M:N relationship needs a junction table.</p>
+
+<h2>2. Logical design (relational model)</h2>
+<p>Mapping rules: each entity becomes a relation, each 1:N relationship becomes a foreign key on the N side, and key attributes become primary keys. <u>Underlined</u> = PK, <i>italic</i> = FK.</p>
+<pre>CUSTOMER ( <u>customer_id</u>, full_name, phone [UNIQUE], email, created_at, updated_at )
+SERVICE  ( <u>service_id</u>, code [UNIQUE], label, price, is_active )
+BOOKING  ( <u>booking_id</u>, <i>customer_id</i> → CUSTOMER, <i>service_id</i> → SERVICE, amount_due,
+           event_date, notes, status, created_at, updated_at )
+PAYMENT  ( <u>transaction_id</u>, <i>booking_id</i> → BOOKING, msisdn, amount, status,
+           airtel_response, error, created_at, last_checked )</pre>
+<h3>Normalisation</h3>
+<div class="scroll"><table>
+<tr><th>Form</th><th>How it is met</th></tr>
+<tr><td>1NF</td><td>All attributes are atomic. No repeating groups. Every table has a primary key.</td></tr>
+<tr><td>2NF</td><td>All primary keys are single columns, so no partial dependencies exist.</td></tr>
+<tr><td>3NF</td><td>The old flat <code>bookings</code> table repeated <code>full_name, email</code> (determined by phone) and <code>service_label, price</code> (determined by service). These moved into CUSTOMER and SERVICE, which removes the transitive dependencies.</td></tr>
+<tr><td>Deliberate exception</td><td><code>amount_due</code> and <code>payments.amount</code> copy the price at the time. If the package price changes later, old bookings and receipts must keep the price actually charged. This is a controlled snapshot, not an anomaly.</td></tr>
+</table></div>
+
+<h2>3. Physical design (MySQL / MariaDB on XAMPP)</h2>
+<p>The full DDL is in <code>schema.sql</code>. Every table uses the <b>InnoDB</b> engine, which supplies transactions, row-level locks, foreign keys and crash recovery.</p>
+<div class="scroll"><table>
+<tr><th>Table</th><th>Columns and types</th><th>Keys, indexes, constraints</th></tr>
+<tr><td>customers</td><td>customer_id INT UNSIGNED AI · full_name VARCHAR(120) · phone CHAR(9) · email VARCHAR(160) NULL · created_at/updated_at TIMESTAMP</td><td>PK(customer_id) · UNIQUE(phone) · CHECK phone is 9 digits</td></tr>
+<tr><td>services</td><td>service_id TINYINT UNSIGNED AI · code VARCHAR(20) · label VARCHAR(60) · price DECIMAL(10,2) · is_active TINYINT(1)</td><td>PK · UNIQUE(code) · CHECK price &gt; 0</td></tr>
+<tr><td>bookings</td><td>booking_id VARCHAR(32) · customer_id · service_id · amount_due DECIMAL(10,2) · event_date DATE · notes TEXT · status ENUM('pending_payment','paid','cancelled') · timestamps</td><td>PK · FK→customers, FK→services (ON DELETE RESTRICT) · INDEX(customer_id), INDEX(service_id,event_date), INDEX(status) · CHECK amount_due &gt; 0</td></tr>
+<tr><td>payments</td><td>transaction_id VARCHAR(32) · booking_id · msisdn CHAR(9) · amount DECIMAL(10,2) · status ENUM('PENDING','SUCCESS','FAILED') · airtel_response TEXT · error TEXT · created_at · last_checked</td><td>PK · FK→bookings (RESTRICT) · INDEX(booking_id,status) · CHECK amount &gt; 0</td></tr>
+</table></div>
+<p>Design choices: money uses <code>DECIMAL</code> (never FLOAT). Phones are stored as a normalised 9-digit MSISDN, so <code>0972971151</code> and <code>+260972971151</code> match the same customer. <code>RESTRICT</code> prevents deleting a record that financial history depends on.</p>
+
+<h2>4. CRUD operations</h2>
+<div class="scroll"><table>
+<tr><th>Entity</th><th>Create</th><th>Read</th><th>Update</th><th>Delete</th></tr>
+<tr><td>Booking</td><td><code>POST bookings.php</code> (public)</td><td><code>GET bookings.php[?id=]</code> (admin)</td><td><code>PUT bookings.php?id=</code> (admin, unpaid only)</td><td><code>DELETE bookings.php?id=</code> (admin): hard delete if no payments, otherwise status becomes <code>cancelled</code>; paid bookings are refused</td></tr>
+<tr><td>Customer</td><td>Automatic upsert on booking</td><td>Joined into booking reads</td><td>Upsert refreshes name/email</td><td>Retained (history)</td></tr>
+<tr><td>Service</td><td><code>POST services.php</code> (admin)</td><td><code>GET services.php</code> (public, active) / <code>?all=1</code> (admin)</td><td><code>PUT services.php?id=</code> (admin)</td><td><code>DELETE services.php?id=</code> (admin): deactivates if bookings reference it</td></tr>
+<tr><td>Payment</td><td><code>POST payment_initiate.php</code></td><td><code>GET payment_status.php?id=</code></td><td>Status settled by <code>payment_status.php</code></td><td>Never deleted (audit trail)</td></tr>
+</table></div>
+<p>Admin calls need the header <code>X-Admin-Token</code> set to <code>admin_token</code> in <code>config.php</code>. Until you change the default value, admin endpoints stay locked.</p>
+
+<h2>5. ACID properties</h2>
+<div class="scroll"><table>
+<tr><th>Property</th><th>Where and how it is implemented</th></tr>
+<tr><td><span class="pill">A</span>Atomicity</td><td><code>with_tx()</code> in <code>helpers.php</code> wraps each multi-step change in BEGIN / COMMIT, with ROLLBACK on any exception. Examples: customer upsert + booking insert; payment status + booking status → <code>paid</code> in one unit, so a payment can never be SUCCESS while its booking stays unpaid.</td></tr>
+<tr><td><span class="pill">C</span>Consistency</td><td>PK, UNIQUE, FK, CHECK and ENUM constraints, plus strict SQL mode (no silent truncation). The price always comes from the database, never from the browser. State rules are enforced in code (paid bookings cannot be edited or deleted; final payment states are immutable).</td></tr>
+<tr><td><span class="pill">I</span>Isolation</td><td>InnoDB default REPEATABLE READ plus explicit <code>SELECT … FOR UPDATE</code> row locks on the booking or payment being changed. This stops double payment prompts, double settlement and edits during payment. The Airtel HTTP call runs outside the transaction, so locks are never held during network waits.</td></tr>
+<tr><td><span class="pill">D</span>Durability</td><td>InnoDB redo log with <code>innodb_flush_log_at_trx_commit=1</code> (keep this value). The PENDING payment row is committed <i>before</i> Airtel is called, so even if PHP crashes after the prompt is sent, the transaction is on disk and can be settled later.</td></tr>
+</table></div>
+<p>To verify, run <code>health.php</code>. It reports an error if any table is not InnoDB.</p>
+</main>
+<script>
+const svg=document.getElementById('er'),L=[],S=[];
+const X=(t,x,y,c)=>`<text x="${x}" y="${y}" class="${c||''}">${t}</text>`;
+function line(a,b,dbl){L.push(`<line x1="${a[0]}" y1="${a[1]}" x2="${b[0]}" y2="${b[1]}" class="${dbl?'dbl':'ln'}"/>`);if(dbl)L.push(`<line x1="${a[0]}" y1="${a[1]}" x2="${b[0]}" y2="${b[1]}" class="gap"/>`)}
+function ent(n,c){S.push(`<rect x="${c[0]-65}" y="${c[1]-23}" width="130" height="46" class="E"/>`+X(n,c[0],c[1],'K'.slice(1)).replace('<text','<text style="font-weight:700;font-size:14px"'))}
+function rel(n,c){S.push(`<polygon points="${c[0]},${c[1]-35} ${c[0]+62},${c[1]} ${c[0]},${c[1]+35} ${c[0]-62},${c[1]}" class="R"/>`+X(n,c[0],c[1]))}
+function attrs(c,list,a0,a1){const n=list.length;list.forEach((t,i)=>{const key=t[0]==='*',lab=key?t.slice(1):t,r=i%2?200:120,a=(a0+i*(a1-a0)/(n-1))*Math.PI/180,x=c[0]+r*Math.cos(a),y=c[1]-r*Math.sin(a);line(c,[x,y]);S.push(`<ellipse cx="${x}" cy="${y}" rx="50" ry="17" class="A"/>`+X(lab,x,y,key?'K':''))})}
+function conn(e,r,cardE,dblE,cardR,dblR,eC,rC){line(e,r,dblE);const d=Math.hypot(r[0]-e[0],r[1]-e[1]),u=[(r[0]-e[0])/d,(r[1]-e[1])/d];
+ const p=(o,pt,s)=>[pt[0]+s*u[0]*o+(u[0]===0?14:0),pt[1]+s*u[1]*o-(u[0]===0?0:14)];
+ S.push(X(cardE,...p(88,e,1),'card'));}
+const C=[230,380],B=[700,380],P=[1190,380],V=[700,720],M=[465,380],Q=[945,380],I=[700,550];
+// connections (entity side single/double, 1 or N)
+line(C,M);line(M,B,true);line(V,I);line(I,B,true);line(B,Q);line(Q,P,true);
+attrs(C,['*customer_id','full_name','phone','email','created_at'],110,250);
+attrs(B,['*booking_id','event_date','notes','status','amount_due','created_at'],25,160);
+attrs(P,['*transaction_id','msisdn','amount','status','created_at','last_checked'],-80,80);
+attrs(V,['*service_id','code','label','price','is_active'],200,340);
+rel('Makes',M);rel('Is_for',I);rel('Settled_by',Q);
+ent('Customer',C);ent('Booking',B);ent('Payment',P);ent('Service',V);
+const T=(t,x,y)=>S.push(`<text x="${x}" y="${y}" class="card">${t}</text>`);
+T('1',305,366);T('N',620,366);T('1',714,660);T('N',712,462);T('1',785,366);T('N',1105,366);
+svg.innerHTML=L.join('')+S.join('');
+</script></body></html>
